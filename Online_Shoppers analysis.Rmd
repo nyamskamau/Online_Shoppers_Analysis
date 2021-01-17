@@ -1,0 +1,855 @@
+---
+title: 'Independent Project Week 13'
+author: 'Roselynn'
+date: '1/15/2021'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1.Problem Definition
+
+[Kira Plastinina]('https://kiraplastinina.com/company_information/') is a Brand of Fashionable Designer clothes marketed primarily to young women and sold across several countries namely Russia, Ukraine, Kazakhstan, Belarus, China, Philippines, and Armenia.
+The brand’s Sales and Marketing team would like to understand their customer’s behavior from data that they have collected over the past year. More specifically, they would like to learn the characteristics of customer groups.
+Therefore as the researcher I am tasked with analyzing the data and providing insights and recommendations to the company based on my findings.
+
+
+# 2.Data Sourcing
+
+The data was provided by the company's Sales and Marketing team and can be found at this [link](http://bit.ly/EcommerceCustomersDataset).
+The description of the dataset and its columns is provided within this document.
+
+
+# 3. Check the Data
+
+I imported the dataset and  loaded the libraries that I used for my analysis.
+I then undertook several steps to check the data and its attributes , highlighting each step throughout the whole process.
+
+```{r}
+#Loading the Libraries used in this analysis
+
+library(tidyverse) # collection of R packages for preparing, wrangling and visualizing data. 
+library(ggpubr)
+
+```
+
+
+
+```{r}
+#Importing the Dataset
+online_shoppers <- read_csv("C:/Users/Njeri/Downloads/online_shoppers_intention.csv")
+
+``` 
+
+After importing the dataset I carried out several steps in order to further understand the dataset
+
+```{r}
+# Obtaining information about the dataset
+glimpse(online_shoppers)
+
+``` 
+
+
+The dataset had 18 columns and 12,330 rows.
+
+The dataset had the columns listed above , the descriptions for these columns and the dataset in general is as listed below :
+
++ The dataset consists of 10 numerical and 8 categorical attributes. The 'Revenue' attribute can be used as the class label.
++ **Administrative**, **Administrative Duration**, **Informational**, **Informational Duration**, **Product Related** and **Product Related Duration** represents the number of different types of pages visited by the visitor in that session and total time spent in each of these page categories. The values of these features are derived from the URL information of the pages visited by the user and updated in real-time when a user takes an action, e.g. moving from one page to another. 
++ The **Bounce Rate**, **Exit Rate** and **Page Value** features represent the metrics measured by **Google Analytics** for each page in the e-commerce site. 
++ The value of the **Bounce Rate** feature for a web page refers to the percentage of visitors who enter the site from that page and then leave (**bounce**) without triggering any other requests to the analytics server during that session. 
++ The value of the **Exit Rate** feature for a specific web page is calculated as for all pageviews to the page, the percentage that was the last in the session.
++ The **Page Value** feature represents the average value for a web page that a user visited before completing an e-commerce transaction. 
++ The **Special Day** feature indicates the closeness of the site visiting time to a specific special day (e.g. Mother’s Day, Valentine's Day) in which the sessions are more likely to be finalized with the transaction. The value of this attribute is determined by considering the dynamics of e-commerce such as the duration between the order date and delivery date. For example, for Valentina’s day, this value takes a nonzero value between February 2 and February 12, zero before and after this date unless it is close to another special day, and its maximum value of 1 on February 8. 
++ The dataset also includes the operating system, browser, region, traffic type, visitor type as returning or new visitor, a Boolean value indicating whether the date of the visit is weekend, and month of the year.
+
+
+```{r}
+# Previewing the Dataset
+head(online_shoppers)
+
+``` 
+I then previewed the dataset using the head() function and finally obtained the summary statistics with the summary()  function.
+
+```{r}
+# Obtaining the summary stastics of the dataset
+summary(online_shoppers)
+
+```
+
+At first glance I can see that there are missing values in several columns of the dataset. However these will be further analyzed in the next step of my analysis.
+
+
+# 4. Performing Data Cleaning
+
+```{r}
+# Checking for null values
+colSums(is.na(online_shoppers))
+
+```
+
+The first 8 columns of this dataset all have 14 missing entries , given that the dataset had over 12,000 I opted to drop these from my dataset.
+
+
+
+```{r}
+# Omitting the null values from my dataset
+online_shoppers <- na.omit(online_shoppers)
+colSums(is.na(online_shoppers))
+dim(online_shoppers)
+
+```
+
+The next step was checking for duplicates in my dataset
+
+```{r}
+# Checking for duplicates
+sum(duplicated(online_shoppers))
+dup_records <- duplicated(online_shoppers)
+sum(dup_records)
+``` 
+
+The dataset had 117 duplicated records and I dropped these from the dataset.
+```{r}
+# Removing the duplicated records
+online_shoppers <- online_shoppers[!duplicated(online_shoppers), ]
+
+dim(online_shoppers)
+
+```
+
+
+# 5. Exploratory Data Analysis
+
+## 5.1.Univariate Data Analysis
+
+After cleaning the dataset , I carried out my EDA .
+
+```{r , echo=F}
+library(psych)
+
+```
+
+I carried out my univariate analysis by analyzing the variables in the dataset using the describe function to obtain the summary statistics  of the columns. 
+
+#### i.Administrative Variable
+
+This variable represents the number of Administrative pages that a user visited ,measured in real time.
+
+```{r}
+ 
+
+desc <- describe(online_shoppers$Administrative)
+print(desc)
+
+p1 <- ggplot(online_shoppers) + geom_boxplot(aes(Administrative))
+p2 <- ggplot(online_shoppers,aes(Administrative)) + geom_bar(fill= "steelblue",width= 0.6)#+ coord_flip()
+p3 <- ggplot(online_shoppers) + geom_density(aes(Administrative))
+
+
+
+figure <- ggarrange(p1, p3, p2,
+                     widths = c(20,20),
+                    heights = c(20,20),
+                    ncol = 2, nrow = 2)
+figure
+
+```
+
++ The mean number of Administrative pages visited by users was 2.34  , with the median value being 1. 
++ There were outliers in this column. However being that majority of users visited zero such pages , this was  not an alarming  factor.
++ The range of the variable was 27 , with the min value being 0 ,plotting a barplot for this variable we see that in excess of 5,500 users visited zero Administrative pages.
++ The column is highly skewed with a value of 1.95 and can be characterized as Leptokurtic with a value of 4.63, this could be attributed to the outliers in the column.
+
+
+
+#### ii.Administrative Duration 
+
+This column records the amount of time a user spent on  an Administrative site.
+
+```{r}
+ 
+
+desc <- describe(online_shoppers$Administrative_Duration)
+print(desc)
+
+p1 <- ggplot(online_shoppers) + geom_boxplot(aes(Administrative_Duration))
+p2 <- ggplot(online_shoppers,aes(Administrative_Duration)) + geom_histogram(fill= "steelblue",bins=20)#+ coord_flip()
+p3 <- ggplot(online_shoppers) + geom_density(aes(Administrative_Duration))
+
+
+
+figure <- ggarrange(p1, p3, p2,
+                     widths = c(20,20),
+                    heights = c(20,20),
+                    ncol = 2, nrow = 2)
+figure
+
+```
+
++ On average users spent 81.68 minutes on Administrative Sites ,with the median amount of time being 9 minutes.
++ The variable had very many outliers as seen on the boxplot , however given that there was  a high range and many users spent almost almost no time on the site , therefore I did not drop these values.
++ The column was highly skewed and leptokurtic , with a values of 5.59 and 50.09 respectively. The Leptokurtic nature of the column can be attributed to the outliers within the column.
+
+
+
+#### iii.Informational 
+
+This column represents the number of Informational Pages visited by the user.
+
+
+```{r}
+ 
+
+desc <- describe(online_shoppers$Informational)
+print(desc)
+
+p1 <- ggplot(online_shoppers) + geom_boxplot(aes(Informational))
+p2 <- ggplot(online_shoppers,aes(Informational)) + geom_bar(fill= "steelblue",width= 0.6)#+ coord_flip()
+p3 <- ggplot(online_shoppers) + geom_density(aes(Informational))
+
+
+
+figure <- ggarrange(p1, p3, p2,
+                     widths = c(20,20),
+                    heights = c(20,20),
+                    ncol = 2, nrow = 2)
+figure
+
+```
+
+
++ The average number of Informational Pages frequented by users was 0.51 and the median value was 0.
++ From the barplot we can see that almost 10,000 users from a population of over 12,000 visited zero informational pages .
++ Therefore this behavious causes the variable to have several outliers and behave in a leptokurtic nature with the kurtosis value being 26.64.
+The variable is also highly skewed at 4.01.
+
+
+
+#### iv.Informational Duration
+
+This column records the amount of time users spent on Informational Sites on the internet.
+
+
+```{r}
+ 
+
+desc <- describe(online_shoppers$Informational_Duration)
+print(desc)
+
+p1 <- ggplot(online_shoppers) + geom_boxplot(aes(Informational_Duration))
+p2 <- ggplot(online_shoppers,aes(Informational_Duration)) + geom_histogram(fill= "steelblue",bins=20)#+ coord_flip()
+p3 <- ggplot(online_shoppers) + geom_density(aes(Informational_Duration))
+
+
+
+figure <- ggarrange(p1, p3, p2,
+                     widths = c(20,20),
+                    heights = c(20,20),
+                    ncol = 2, nrow = 2)
+figure
+
+```
+
+
++ The mean number of hours users spent on Informational Sites was 34.84 while the maximum amount of time spent on Informational sites came in at 2549.38.
++ The Variable was highly skewed at 7.54  and leptokurtic in nature with a value of 75.45. This is largely due to the high number of outliers in the dataset.
++ From the barplots , over 9,000 users didnot spend any time on Informational Sites.
+
+
+
+
+#### v.ProductRelated 
+
+This was the number of ProductRelated sites that users visited.
+
+```{r}
+ 
+
+desc <- describe(online_shoppers$ProductRelated)
+print(desc)
+
+p1 <- ggplot(online_shoppers) + geom_boxplot(aes(ProductRelated))
+p2 <- ggplot(online_shoppers,aes(ProductRelated)) + geom_histogram(fill= "steelblue",bins=20)#+ coord_flip()
+p3 <- ggplot(online_shoppers) + geom_density(aes(ProductRelated))
+
+
+
+figure <- ggarrange(p1, p3, p2,
+                     widths = c(20,20),
+                    heights = c(20,20),
+                    ncol = 2, nrow = 2)
+figure
+
+```
+
++ The mean amount product related  sites that users visited was 32.06 and the median was 18.
++ The maximum was 705 , a rather high amount.
++ The column was also highly skewed and leptokurtic as the ones above at 4.33 and 31.04 respectively. This is likely due to the high number of outliers in the column.
++ The number of people who visited zero such pages is lower than those of the Administrative and Informational Pages at 6,000.
+
+
+#### vi.ProductRelated Duration
+
+This variable represents the amount of time users spent on Product Related Sites 
+
+```{r}
+ 
+
+desc <- describe(online_shoppers$ProductRelated_Duration)
+print(desc)
+
+p1 <- ggplot(online_shoppers) + geom_boxplot(aes(ProductRelated_Duration))
+p2 <- ggplot(online_shoppers,aes(ProductRelated_Duration)) + geom_histogram(fill= "steelblue",bins=20)#+ coord_flip()
+p3 <- ggplot(online_shoppers) + geom_density(aes(ProductRelated_Duration))
+
+
+
+figure <- ggarrange(p1, p3, p2,
+                     widths = c(20,20),
+                    heights = c(20,20),
+                    ncol = 2, nrow = 2)
+figure
+
+```
+
++ The mean amount of time spent on these sites was on average 1207.51 while the maximum amount of time spent recorded was 63973.52.4
++ The Variable is also highly skewed with a value of 7.25 and leptokurtic at 136.57. This is more likely attributed to the outliers in the column.
+
+
+#### vii.BounceRates
+
+The value of the Bounce Rate feature for a web page refers to the percentage of visitors who enter the site from that page and then leave (bounce) without triggering any other requests to the analytics server during that session.
+
+```{r}
+ 
+
+desc <- describe(online_shoppers$BounceRates)
+print(desc)
+
+p1 <- ggplot(online_shoppers) + geom_boxplot(aes(BounceRates))
+p2 <- ggplot(online_shoppers,aes(BounceRates)) + geom_histogram(fill= "steelblue",bins=20)#+ coord_flip()
+p3 <- ggplot(online_shoppers) + geom_density(aes(BounceRates))
+
+
+
+figure <- ggarrange(p1, p3, p2,
+                     widths = c(20,20),
+                    heights = c(20,20),
+                    ncol = 2, nrow = 2)
+figure
+
+```
+
++ The mean value was 0.02 while the maximum value for the column was 0.2%.
++ Similar to the other columns it was highly skewed and leptokurtic and had a high number of outliers.
++ From the histogram we can see that majority of the users range between 0 and 0.05% who leave the site without triggering any requests.
+
+
+#### viii.ExitRates 
+
+The value of the Exit Rate feature for a specific web page is calculated as for all pageviews to the page, the percentage that was the last in the session.
+
+```{r}
+ 
+
+desc <- describe(online_shoppers$ExitRates)
+print(desc)
+
+p1 <- ggplot(online_shoppers) + geom_boxplot(aes(ExitRates))
+p2 <- ggplot(online_shoppers,aes(ExitRates)) + geom_histogram(fill= "steelblue",bins=20)#+ coord_flip()
+p3 <- ggplot(online_shoppers) + geom_density(aes(ExitRates))
+
+
+
+figure <- ggarrange(p1, p3, p2,
+                     widths = c(20,20),
+                    heights = c(20,20),
+                    ncol = 2, nrow = 2)
+figure
+
+```
+
++ The mean exit rate was 0.04 while the median was 0.03. The column had was highly skewed and leptokurtic coming in at 2.23 and 4.62 respectively.
++ The column had many outliers and from the barplot we can see that many of the users ranged between zero and 0.1.
+
+
+#### ix.PageValues
+
+The Page Value feature represents the average value for a web page that a user visited before completing an e-commerce transaction.
+
+```{r}
+ 
+
+desc <- describe(online_shoppers$PageValues)
+print(desc)
+
+p1 <- ggplot(online_shoppers) + geom_boxplot(aes(PageValues))
+p2 <- ggplot(online_shoppers,aes(PageValues)) + geom_histogram(fill= "steelblue",bins=20)#+ coord_flip()
+p3 <- ggplot(online_shoppers) + geom_density(aes(PageValues))
+
+
+
+figure <- ggarrange(p1, p3, p2,
+                     widths = c(20,20),
+                    heights = c(20,20),
+                    ncol = 2, nrow = 2)
+figure
+
+```
+
++ The mean number of times users visited a page before completing a transaction was 5.95 while the median was 0 and the maximum amount was 361.76. 
++ The variable , similar to those above it was also highly skewed and leptokurtic at 6.35 and 64.93 respectively.
+
+
+
+#### x.SpecialValues
+
+The Special Day feature indicates the closeness of the site visiting time to a specific special day (e.g. Mother’s Day, Valentine’s Day) in which the sessions are more likely to be finalized with the transaction. The value of this attribute is determined by considering the dynamics of e-commerce such as the duration between the order date and delivery date.
+
+```{r}
+ 
+
+desc <- describe(online_shoppers$SpecialDay)
+print(desc)
+
+ggplot(online_shoppers, aes(x=SpecialDay)) + geom_bar(fill= "steelblue")+labs(title='Countplot for the SpecialDay Variable')
+
+``` 
++ Majority of the visits , over 10,000, to the pages occured during dates that were not near Special days.
+
+#### xi.Operating Systems
+
+```{r}
+ggplot(online_shoppers, aes(x=OperatingSystems)) + geom_bar(fill= "steelblue")+labs(title='Countplot for the OperatingSystems Variable')
+
+```
+
++ Majority of the users used the Second Operating System , followed ny the third and first OS's
+
+#### xii.Brower
+
+```{r}
+ggplot(online_shoppers, aes(x=as.factor(Browser))) + geom_bar(fill= "steelblue")+labs(title='Countplot for the Browser Variable')
+
+```
+
++ Similarly most of the users used the second of the 13 Web Browsers.
+
+#### xiii.Region
+
+```{r}
+ggplot(online_shoppers, aes(x=Region)) + geom_bar(fill= "steelblue")+labs(title='Countplot for the Region Variable')
+
+```
+
++ Many of the users were from the first region , and then the third region.
++ The region with the least users was the fifth region.
+
+#### xiv.TrafficType
+
+```{r}
+ggplot(online_shoppers, aes(x=as.factor(TrafficType))) + geom_bar(fill= "steelblue")+labs(title='Countplot for the Traffic Type Variable')
+
+```
+
++ The second type of traffic was the most popular with almost 4,000 users whereas the 12th , 16th and 17th had next to no users.
+
+#### xv.Month
+
+```{r}
+ggplot(online_shoppers, aes(x=Month)) + geom_bar(fill= "steelblue")+labs(title='Countplot for the Month Variable')
+
+``` 
+
++ The most popular months of the year were May , November ,March and December in that order.
++ The least popular months of the year were Feb, September , June ,July and August in no particular order.
+
+
+
+#### xvi.VisitorType 
+
+```{r}
+ggplot(online_shoppers, aes(x=VisitorType)) + geom_bar(fill= "steelblue")+labs(title='Countplot for the VisitorType Variable')
+
+``` 
+
++ Over 10,000 users visiting particular sites were returning visitors while new visitors averaged at 2,000 and others were almost zero.
+
+
+#### xvii.Weekend
+
+
+```{r}
+ggplot(online_shoppers, aes(x=Weekend)) + geom_bar(fill= "steelblue")+ labs(title='Countplot for the Weekend Variable')
+
+```
+
+There was more activity on the sites on Weekdays , compared to weekdays.
+
+#### xviii.Revenue
+
+This was a Logical Variable , showing whether or not the site made money from a user
+
+```{r}
+ggplot(online_shoppers, aes(x=Revenue)) + geom_bar(fill= "steelblue")+labs(title='Countplot for the Revenue Variable')
+
+``` 
+
+The site did not make any Revenue most of the time , over 10,000 , as seen in the countplot.
+
+
+
+
+## 5.2.Bivariate Data Analysis
+
+I then carried out my bivariate analysis , comparing many of the variables in the dataset with each other and also with the Target, Revenue , Variable.
+
+#### i.Revenue Distribution by Region
+
+```{r}
+
+ggplot(online_shoppers, aes(x=as.factor(Region))) + geom_bar(aes(fill= `Revenue`)) + labs(title='Revenue Distribution by Region')
+
+
+```
+
+
+The first region with the highest demographic of users brings in the highest revenue to the site .
+
+#### ii. Revenue Distribution by Special Day Variable
+
+```{r}
+
+ggplot(online_shoppers, aes(x=SpecialDay)) + geom_bar(aes(fill= `Revenue`))+labs(title='Revenue Distribution by Special Day Variable')
+
+
+```
+
+Most of the revenue made on the site is made on days that are not associated with special days.
+
+#### iii. Revenue Distribution by Traffic Type Variable
+
+```{r}
+
+ggplot(online_shoppers, aes(x=factor(TrafficType))) + geom_bar(aes(fill= `Revenue`))+labs(title='Revenue Distribution by Traffic Type ')
+
+
+```
+
+The second traffic type , with approximately 4,000 users also brings about the highest revenue.
+
+#### iv. Revenue Distribution by Month
+
+```{r}
+
+ggplot(online_shoppers, aes(x=Month )) + geom_bar(aes(fill= `Revenue`))+labs(title='Revenue Distribution by Month')
+
+
+``` 
+
+The highest revenue is made in the month of November , the second busiest month of the year. This may be due to the fact that many people are making purchases for the holiday season.
+
+#### v.Revenue Distribution by Month 
+
+```{r}
+ggplot(online_shoppers, aes(x=Weekend)) + geom_bar(aes(fill=Revenue))+labs(title='Revenue Distribution by Weekend Variable')
+
+```
+
+Given that many users visit these sites on weekdays as compared to weekends then we can see that much of the revenue is made on Weekdays.
+
+#### vi.Revenue Distribution by Visitor Type
+
+```{r}
+ggplot(online_shoppers, aes(x=VisitorType)) + geom_bar(aes(fill=Revenue))+labs(title='Revenue Distribution by Visitor Type')
+
+```
+
+Most of the revenue , can be seen to have come from the Returning Visitors of the site , however given that they make up a large demographic of the users this was expected.
+
+#### vii.Product Related Page Duration by Month
+
+```{r}
+ggplot(online_shoppers, aes(y=Month ,x = ProductRelated )) + geom_point(aes(colour= `Revenue`))+labs(title='ProductRelated Page Duration by Month')
+
+``` 
+
+The month of November has the highest amount of users visiting Product Related Pages with many users spending between zero and 20,000 minutes on these sites.
+It can also be seen that alot of revenue is acquired during this month.
+
+#### viii.Informational Page Duration by Month
+
+```{r}
+ggplot(online_shoppers, aes(y=Month ,
+                            x = Informational_Duration )) + geom_point(aes(colour= `Revenue`))+labs(title='Informational Page Duration by Month')
+
+```
+
+Similarly many users can be seen to spend alot of time in the Informational Page in the month of November.
+May and December can also be seen to bring about similar numbers in terms of users on these pages and the amount of time theu spend.
+
+#### ix.Administrative Page Duration by Month
+
+```{r}
+ggplot(online_shoppers, aes(y=Month,
+                            x = Administrative_Duration )) + geom_point(aes(colour= `Revenue`))+labs(title='Administrative Page Duration by Month')
+
+```
+
+Users can also be seen to spend high amount of time on Administrative pages in November ,March and May.
+February has the least amount of traffic to these pages and the amount of revenue in this month can be seen to be next to none.
+
+#### x.Exit rates by Month
+
+```{r}
+ggplot(online_shoppers, aes(y=Month,
+                            x = ExitRates )) + geom_point(aes(colour= `Revenue`))+labs(title='Exit Rate by Month')
+
+```
+
+The exit rates of the sites , can be seen to be highest in May , followed by November.
+
+
+#### xi. ExitRate against Bounce Rate
+```{r}
+ggplot(online_shoppers, aes(x=ExitRates,
+                            y = BounceRates )) + geom_point(aes(colour= `Revenue`))+labs(title='Exit Rate Against Bounce Rate')
+
+```
+
+Plotting a scatter plot of Bounce Rates against Exit rates and we can see that there seems to be a positive correlation between the two variables.
+
+### Feature Engineering
+
+After plotting the relevant visualizations , I then encoded the VisitorType and Weekend variables.
+Given that the Revenue variable was the label , I dropped it as unsupervised learning does not require labels.
+
+
+```{r}
+# I encoded the Month,VisitorType and Weekend Variabls using one-hot encoding
+
+library(caret)
+
+dat <- select(online_shoppers,c(Month,VisitorType,Weekend))
+dmy <- dummyVars(" ~ .", data = dat, fullRank = T)
+dat_transformed <- data.frame(predict(dmy, newdata = dat))
+
+glimpse(dat_transformed)
+```
+
+```{r}
+# Dropping the Revenue Variable, Month VisitorType and Weekend columns after encoding 
+online_shoppers <- select(online_shoppers , c(-Revenue,-Month,-VisitorType,-Weekend))
+dim(online_shoppers)
+
+```
+
+
+
+```{r}
+# I then used the cbind() function to merge my encoded columns with the other columns in my dataset
+#online_shoppers <- cbind(online_shoppers,dat_transformed)
+dim(online_shoppers)
+glimpse(online_shoppers)
+
+```
+
+
+
+```{r}
+
+online_shoppers_hc <- online_shoppers
+dim(online_shoppers_hc)
+
+```
+
+
+ I plotted the Correlation matrix of the variables in the dataset and made the following observations:
+ 
+```{r,fig.width=15,fig.height=15}
+
+# Plotting the Correlation Heatmap
+library(ggcorrplot)
+ggcorrplot(cor(online_shoppers), hc.order = F,type = 
+"upper", lab = T ,
+  ggtheme = ggplot2::theme_gray,
+  colors = c("#00798c", "white", "#edae49"),
+  tl.srt = 90)
+
+```
+  
+There is a strong positive correlation of 0.9 between the Exit Rate and the Bounce Rate Variables.
+Similarly the ProductRelated and ProductRelated_Duration have a strong Positive correlation of 0.86.
+Other variables that are also positively correlated are :
+
+   + Informational and Informational Duration at 0.62
+   + Administrative and Administrative Duration at 0.62.
+  
+These variables are correlated as they 
+  
+
+# 6. Implementing the Solution
+
+
+I used two clustering techniques i.e:
+
+    + Hierarchical Clustering
+  
+    + K-Means Clustering 
+    
+
+## 6.1. K-Means Clustering
+
+Before building my model I normalized the dataset by applying a normalization function.
+
+```{r}
+# Creating a Normalizing Function
+normalize <- function(x){
+  return ((x-min(x)) / (max(x)-min(x)))
+}
+
+# Applying the Normalization function to the data
+online_shoppers[,1:14]<- normalize(online_shoppers[,1:14])
+head(online_shoppers)
+
+```
+
+
+#### 6.1.1.Finding the Optimal K 
+
+I used two methods to find the optimal value for K :
+
+      + The Elbow Method
+      + The Silhouette Method
+
+```{r}
+#Elbow Method for finding the optimal number of clusters
+set.seed(1123)
+# Compute and plot wss for k = 2 to k = 15.
+k.max <- 15
+data <- online_shoppers
+wss <- sapply(1:k.max, 
+              function(k){kmeans(data, k, nstart=50,iter.max = 100 )$tot.withinss})
+wss
+plot(1:k.max, wss,
+     type="b", pch = 19, frame = FALSE, 
+     xlab="Number of clusters K",
+     ylab="Total within-clusters sum of squares")
+
+``` 
+
+
+
+
+```{r}
+
+library(factoextra)
+library(cluster)
+fviz_nbclust(online_shoppers, kmeans, method='silhouette')
+
+```
+
+
+
+
+After finding the preferred value for K as two, I applied it to my data and plotted the output.
+
+
+```{r}
+# Plottting K_Mean Clusters
+result<- kmeans(online_shoppers,2) 
+
+# Previewing the no. of records in each cluster
+
+result$size 
+
+# Plotting the Clusters
+
+
+
+```
+
+I then used the factoextra package to plot the clusters in the dataset.
+
+```{r}
+
+fviz_cluster(result, data = online_shoppers,
+             palette = c("#2E9FDF","#E7B800"), 
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw()
+             )
+
+
+```
+
+I then used the fviz_cluster to plot the clusters of my data as seen here.
+
+## 6.2. Hierarchical Clustering
+
+Next , I carried out hierarchical clustering on the data and compared my findings to those of the K-Means Clustering.
+
+
+```{r,fig.width=15,fig.height=15}
+
+library("ggdendro")
+online_shoppers_hc <- na.omit(online_shoppers_hc)
+clust <- scale(online_shoppers_hc)
+d <- dist(as.matrix(clust) , method = 'manhattan')
+
+#hc <- hclust(d, method = "ward.D2
+library(flashClust)
+cl <- flashClust(d, method = "average")
+ggdendrogram(cl)
+#ggdendrogram(hc)
+#clustergram(online_shoppers, k.range = 2:8, line.width = 0.004)
+
+```
+
+
+```{r,fig.width=15,fig.height=15}
+
+
+dend <- as.dendrogram(cl)
+
+library(dendextend)
+par(mfrow = c(1,2), mar = c(5,2,1,0))
+dend <- dend %>%
+         color_branches(k = 3) %>%
+         set("branches_lwd", c(2,1,2)) %>%
+         set("branches_lty", c(1,2,1))
+
+plot(dend)
+
+#dend <- color_labels(dend, k = 3)
+# The same as:
+# labels_colors(dend)  <- get_leaves_branches_col(dend)
+#plot(dend)
+
+```
+
+# 7. Challenging the Solution.
+
+
+Given that I applied both Hierarchical and K-Means Clustering in my analysis I decided to challenge the solution by applying DBSCAn Clustering in order to see how my results would vary from those of the K_means.
+
+
+## 7.1. DBSCAN Clustering
+
+```{r}
+
+library(dbscan)
+
+db<-dbscan(clust,eps=1,MinPts = 50 )
+
+print(db)
+
+
+hullplot(clust,db$cluster)
+  
+``` 
+
+Many of the points in the DBSCAN clustering were recorder as noise , therefore this may not be the best , clustering method to use while classifing this particular dataset
