@@ -384,7 +384,7 @@ library(ggcorrplot)
 ggcorrplot(cor(corr), hc.order = F,type = 
 "lower", lab = T ,
   ggtheme = ggplot2::theme_gray,
-  colors = c("#00798c", "white", "#edae49"))
+  colors = c("#00798c", "white", "#edae49"),tl.srt = 90)
 
 ```
 
@@ -445,8 +445,13 @@ dim(test)
 
 My training set after an 80:20 split had 800 rows and 6 columns while the test set had 200 rows with 6 columns.
 
+
+## 4.2. Training the Model
+
 I then used the as.factor function for my target as the model was a Classification model
-Finally I built my decision tree
+
+
+Finally I built my decision tree using cross validation to find the optimal model.
 
 ```{r}
 library(caret)
@@ -471,15 +476,20 @@ dtree_fit
 
 ```
 
-And then plotted the tree , with the best accuracy.
+
+And then plotted the tree for the optimal model 
+
 ```{r}
 library(rpart)
 library(rpart.plot)
-prp(dtree_fit$finalModel, box.palette = "Reds", tweak = 1.2)
+prp(dtree_fit$finalModel, box.palette = "Reds")
 
 ```
 
-I then plotted the confusion matrix for the model
+
+## 4.3. Model Evaluation 
+
+I evaluated the model using the confusion matrix.
 
 ```{r}
 
