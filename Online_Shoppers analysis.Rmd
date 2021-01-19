@@ -9,11 +9,27 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# 1.Problem Definition
+# 1. Problem Statement
+
+### 1.1.Defining the Question
+
+Characterize the behavior of the Kira Plastinina brand customers using unsupervised learning techniques and provide recommendations and insights to the company based on my findings.
+
+### 1.2.Metric for Success
+
+To build a model that can accurately characterize the customers behavior and to relay my findings based on the results of my model.
+
+
+### 1.3. The Context
 
 [Kira Plastinina]('https://kiraplastinina.com/company_information/') is a Brand of Fashionable Designer clothes marketed primarily to young women and sold across several countries namely Russia, Ukraine, Kazakhstan, Belarus, China, Philippines, and Armenia.
 The brand’s Sales and Marketing team would like to understand their customer’s behavior from data that they have collected over the past year. More specifically, they would like to learn the characteristics of customer groups.
 Therefore as the researcher I am tasked with analyzing the data and providing insights and recommendations to the company based on my findings.
+
+
+### 1.4.The Experimental Design Taken
+
+I carried out my analysis gradually ,starting with the problem statement , I then imported the dataset and performed data cleaning , I then carried out my EDA and built my model , finally after doing so I challenged my solution and then finished with providing recommendations based on the findings of my analysis.
 
 
 # 2.Data Sourcing
@@ -21,11 +37,14 @@ Therefore as the researcher I am tasked with analyzing the data and providing in
 The data was provided by the company's Sales and Marketing team and can be found at this [link](http://bit.ly/EcommerceCustomersDataset).
 The description of the dataset and its columns is provided within this document.
 
+### 2.1. The Appropriateness of the Data
+
+Given the problem at hand , the data provided was accurate and adequate enough for me to carry out my analysis.
+
 
 # 3. Check the Data
 
 I imported the dataset and  loaded the libraries that I used for my analysis.
-I then undertook several steps to check the data and its attributes , highlighting each step throughout the whole process.
 
 ```{r}
 #Loading the Libraries used in this analysis
@@ -36,6 +55,7 @@ library(ggpubr)
 ```
 
 
+I then undertook several steps to check the data and its attributes , highlighting each step throughout the whole process.
 
 ```{r}
 #Importing the Dataset
@@ -43,7 +63,7 @@ online_shoppers <- read_csv("C:/Users/Njeri/Downloads/online_shoppers_intention.
 
 ``` 
 
-After importing the dataset I carried out several steps in order to further understand the dataset
+After importing the dataset I used the glimpse() function to preview my dataset
 
 ```{r}
 # Obtaining information about the dataset
@@ -52,9 +72,7 @@ glimpse(online_shoppers)
 ``` 
 
 
-The dataset had 18 columns and 12,330 rows.
-
-The dataset had the columns listed above , the descriptions for these columns and the dataset in general is as listed below :
+`The dataset had 18 columns and 12,330 rows the descriptions for these columns and the dataset in general is as listed below :
 
 + The dataset consists of 10 numerical and 8 categorical attributes. The 'Revenue' attribute can be used as the class label.
 + **Administrative**, **Administrative Duration**, **Informational**, **Informational Duration**, **Product Related** and **Product Related Duration** represents the number of different types of pages visited by the visitor in that session and total time spent in each of these page categories. The values of these features are derived from the URL information of the pages visited by the user and updated in real-time when a user takes an action, e.g. moving from one page to another. 
@@ -63,18 +81,20 @@ The dataset had the columns listed above , the descriptions for these columns an
 + The value of the **Exit Rate** feature for a specific web page is calculated as for all pageviews to the page, the percentage that was the last in the session.
 + The **Page Value** feature represents the average value for a web page that a user visited before completing an e-commerce transaction. 
 + The **Special Day** feature indicates the closeness of the site visiting time to a specific special day (e.g. Mother’s Day, Valentine's Day) in which the sessions are more likely to be finalized with the transaction. The value of this attribute is determined by considering the dynamics of e-commerce such as the duration between the order date and delivery date. For example, for Valentina’s day, this value takes a nonzero value between February 2 and February 12, zero before and after this date unless it is close to another special day, and its maximum value of 1 on February 8. 
-+ The dataset also includes the operating system, browser, region, traffic type, visitor type as returning or new visitor, a Boolean value indicating whether the date of the visit is weekend, and month of the year.
++ The dataset also includes the operating system, browser, region, traffic type, visitor type as returning or new visitor, a Boolean value indicating whether the date of the visit is weekend, and month of the year.`
 
+
+I then previewed the dataset itself in order to get a closer look  using the head() function  
 
 ```{r}
 # Previewing the Dataset
 head(online_shoppers)
 
 ``` 
-I then previewed the dataset using the head() function and finally obtained the summary statistics with the summary()  function.
+I finally obtained the summary statistics with the summary()  function.
 
 ```{r}
-# Obtaining the summary stastics of the dataset
+# Obtaining the Summary statistics of the dataset
 summary(online_shoppers)
 
 ```
@@ -84,15 +104,17 @@ At first glance I can see that there are missing values in several columns of th
 
 # 4. Performing Data Cleaning
 
+The first step of cleaning was checking for the number of null values in the data
+
 ```{r}
 # Checking for null values
 colSums(is.na(online_shoppers))
 
 ```
 
-The first 8 columns of this dataset all have 14 missing entries , given that the dataset had over 12,000 I opted to drop these from my dataset.
+The first 8 columns of this dataset all have 14 missing entries , given that the dataset had over 12,000 entries I opted to drop these from my dataset.
 
-
+I used the na.omit to weed out all the null entries
 
 ```{r}
 # Omitting the null values from my dataset
@@ -112,6 +134,7 @@ sum(dup_records)
 ``` 
 
 The dataset had 117 duplicated records and I dropped these from the dataset.
+
 ```{r}
 # Removing the duplicated records
 online_shoppers <- online_shoppers[!duplicated(online_shoppers), ]
@@ -126,6 +149,7 @@ dim(online_shoppers)
 ## 5.1.Univariate Data Analysis
 
 After cleaning the dataset , I carried out my EDA .
+I used the psych library will gives the summary statistics of  the data and in addition provides further information such as giving the kurtosis and skewness.
 
 ```{r , echo=F}
 library(psych)
@@ -133,6 +157,7 @@ library(psych)
 ```
 
 I carried out my univariate analysis by analyzing the variables in the dataset using the describe function to obtain the summary statistics  of the columns. 
+
 
 #### i.Administrative Variable
 
@@ -622,6 +647,8 @@ ggplot(online_shoppers, aes(x=ExitRates,
 
 Plotting a scatter plot of Bounce Rates against Exit rates and we can see that there seems to be a positive correlation between the two variables.
 
+Users with lower bounce rates and exit rates seem to be the ones bringing in the revenue as these variables increase the revenue comes close to null.
+
 ### Feature Engineering
 
 After plotting the relevant visualizations , I then encoded the VisitorType and Weekend variables.
@@ -633,12 +660,14 @@ Given that the Revenue variable was the label , I dropped it as unsupervised lea
 
 library(caret)
 
-dat <- select(online_shoppers,c(Month,VisitorType,Weekend))
+dat <- select(online_shoppers,c(Month,VisitorType,Weekend,Revenue))
 dmy <- dummyVars(" ~ .", data = dat, fullRank = T)
 dat_transformed <- data.frame(predict(dmy, newdata = dat))
 
 glimpse(dat_transformed)
 ```
+
+I then dropped the ` Revenue , Month , VisitorType and Weekend ` columns from the dataset.
 
 ```{r}
 # Dropping the Revenue Variable, Month VisitorType and Weekend columns after encoding 
@@ -647,11 +676,11 @@ dim(online_shoppers)
 
 ```
 
-
-
+I then used the cbind() function to add the encoded variables into my dataset.
+ 
 ```{r}
 # I then used the cbind() function to merge my encoded columns with the other columns in my dataset
-#online_shoppers <- cbind(online_shoppers,dat_transformed)
+online_shoppers <- cbind(online_shoppers,dat_transformed)
 dim(online_shoppers)
 glimpse(online_shoppers)
 
@@ -667,7 +696,7 @@ dim(online_shoppers_hc)
 ```
 
 
- I plotted the Correlation matrix of the variables in the dataset and made the following observations:
+I plotted the Correlation matrix of the variables in the dataset and made the following observations:
  
 ```{r,fig.width=15,fig.height=15}
 
@@ -686,19 +715,26 @@ Similarly the ProductRelated and ProductRelated_Duration have a strong Positive 
 Other variables that are also positively correlated are :
 
    + Informational and Informational Duration at 0.62
+   
    + Administrative and Administrative Duration at 0.62.
+   
+The RevenueTrue column was correlated with the PageValues variable  at 0.49 . There was also a strong positive correlation between the SpecialDay variable and the Month May.
+
+
   
-These variables are correlated as they 
-  
+### Summary 
+
++ From my EDA I noted that many of the variables in the dataset were heavily skewed and leptokurtic , the reason for this  may have been that there were very many outliers in this dataset.
++ The cause of these outliers was that many of the users didnot visit some of the pages , for example many users did not visit any informational pages , thus any inputs that were higher than zero were more likely recorded as outliers. For this reason I didn't drop any of them as they were accurate representations.
+
 
 # 6. Implementing the Solution
 
+I want to characterize the behaviour of the customers of the Kira brand based on the information at hand.I applied unsupervised learning and I used two clustering techniques i.e:
 
-I used two clustering techniques i.e:
-
-    + Hierarchical Clustering
+    ` Hierarchical Clustering`
   
-    + K-Means Clustering 
+    ` K-Means Clustering `
     
 
 ## 6.1. K-Means Clustering
@@ -706,24 +742,35 @@ I used two clustering techniques i.e:
 Before building my model I normalized the dataset by applying a normalization function.
 
 ```{r}
+
+online_shoppers <- select(online_shoppers , -RevenueTRUE)
+dim(online_shoppers)
 # Creating a Normalizing Function
 normalize <- function(x){
   return ((x-min(x)) / (max(x)-min(x)))
 }
 
 # Applying the Normalization function to the data
-online_shoppers[,1:14]<- normalize(online_shoppers[,1:14])
+online_shoppers<- normalize(online_shoppers)
 head(online_shoppers)
 
 ```
+
+```{r}
+
+memory.limit(24000)
+```
+
+
 
 
 #### 6.1.1.Finding the Optimal K 
 
 I used two methods to find the optimal value for K :
 
-      + The Elbow Method
-      + The Silhouette Method
+
+##### 6.1.1.The Elbow Method
+
 
 ```{r}
 #Elbow Method for finding the optimal number of clusters
@@ -732,7 +779,7 @@ set.seed(1123)
 k.max <- 15
 data <- online_shoppers
 wss <- sapply(1:k.max, 
-              function(k){kmeans(data, k, nstart=50,iter.max = 100 )$tot.withinss})
+              function(k){kmeans(data, k, nstart=50,iter.max = 1000 , algorithm="Lloyd" )$tot.withinss})
 wss
 plot(1:k.max, wss,
      type="b", pch = 19, frame = FALSE, 
@@ -742,6 +789,7 @@ plot(1:k.max, wss,
 ``` 
 
 
+##### 6.1.2.The Silhouette Method
 
 
 ```{r}
@@ -753,13 +801,11 @@ fviz_nbclust(online_shoppers, kmeans, method='silhouette')
 ```
 
 
-
-
 After finding the preferred value for K as two, I applied it to my data and plotted the output.
 
 
 ```{r}
-# Plottting K_Mean Clusters
+# Plotting K_Mean Clusters
 result<- kmeans(online_shoppers,2) 
 
 # Previewing the no. of records in each cluster
@@ -771,8 +817,10 @@ result$size
 
 
 ```
+There were two clusters of size 931 and 11268 .
 
-I then used the factoextra package to plot the clusters in the dataset.
+
+I then used the fviz_cluster in the factoextra package to plot the clusters of my data as seen here.
 
 ```{r}
 
@@ -786,7 +834,124 @@ fviz_cluster(result, data = online_shoppers,
 
 ```
 
-I then used the fviz_cluster to plot the clusters of my data as seen here.
+
+I plotted the clusters using select features from my dataset.
+
+
+```{r}
+
+p1 <- ggplot() + geom_point(data = online_shoppers, 
+             mapping = aes(x = ExitRates, 
+                                  y = ProductRelated, 
+                                  colour = as.factor(result$cluster)))
+
+p2 <- ggplot() + geom_point(data = online_shoppers, 
+             mapping = aes(x = ExitRates, 
+                                  y = ProductRelated_Duration, 
+                                  colour = as.factor(result$cluster)))
+
+
+p3 <- ggplot() + geom_point(data = online_shoppers, 
+             mapping = aes(x = ExitRates, 
+                                  y = Informational, 
+                                  colour = as.factor(result$cluster)))
+
+
+p4 <- ggplot() + geom_point(data = online_shoppers, 
+             mapping = aes(x = ExitRates, 
+                                  y = Informational_Duration, 
+                                  colour = as.factor(result$cluster)))
+
+
+
+p5 <- ggplot() + geom_point(data = online_shoppers, 
+             mapping = aes(x = ExitRates, 
+                                  y = Administrative, 
+                                  colour = as.factor(result$cluster)))
+
+
+
+
+
+p6 <- ggplot() + geom_point(data = online_shoppers, 
+             mapping = aes(x = ExitRates, 
+                                  y = Administrative_Duration, 
+                                  colour = as.factor(result$cluster)))
+
+
+
+
+
+figure <- ggarrange(p1, p2, p3, p4 , p5,p6 ,
+                    ncol = 2, nrow = 3)+labs('Clusters of Exit Rate')
+
+
+figure
+
+```
+
+
+
+I plotted clusters for the pages the clients visited and the exit rates , I noted that:
+
++ Many of the users in the first cluster spent more time in the Product Related pages .
+
++ However on the other Pages , there wasn't a clear distinction on the clusters.
+
+I also plotted the Month May variable against the pages
+
+```{r}
+
+p1 <- ggplot() + geom_point(data = online_shoppers, 
+             mapping = aes(x = as.factor(MonthMay), 
+                                  y = ProductRelated, 
+                                  colour = as.factor(result$cluster)))
+
+p2 <- ggplot() + geom_point(data = online_shoppers, 
+             mapping = aes(x = as.factor(MonthMay), 
+                                  y = ProductRelated_Duration, 
+                                  colour = as.factor(result$cluster)))
+
+
+p3 <- ggplot() + geom_point(data = online_shoppers, 
+             mapping = aes(x = as.factor(MonthMay), 
+                                  y = Informational, 
+                                  colour = as.factor(result$cluster)))
+
+
+p4 <- ggplot() + geom_point(data = online_shoppers, 
+             mapping = aes(x = as.factor(MonthMay), 
+                                  y = Informational_Duration, 
+                                  colour = as.factor(result$cluster)))
+
+
+
+p5 <- ggplot() + geom_point(data = online_shoppers, 
+             mapping = aes(x = as.factor(MonthMay), 
+                                  y = Administrative, 
+                                  colour = as.factor(result$cluster)))
+
+
+
+
+
+p6 <- ggplot() + geom_point(data = online_shoppers, 
+             mapping = aes(x = as.factor(MonthMay), 
+                                  y = Administrative_Duration, 
+                                  colour = as.factor(result$cluster)))
+
+
+
+
+
+figure <- ggarrange(p1, p2, p3, p4 , p5,p6 ,
+                    ncol = 2, nrow = 3)+labs('Clusters of Month May')
+
+
+figure
+
+```
+From these clusters , there is a clear distinction between cluster one and cluster two in the Product Related columns.
 
 ## 6.2. Hierarchical Clustering
 
@@ -809,30 +974,10 @@ ggdendrogram(cl)
 
 ```
 
+The output from my Hierarchical cluster dendrogram was very dense and thus extremely difficult for me to interpret.
 
-```{r,fig.width=15,fig.height=15}
-
-
-dend <- as.dendrogram(cl)
-
-library(dendextend)
-par(mfrow = c(1,2), mar = c(5,2,1,0))
-dend <- dend %>%
-         color_branches(k = 3) %>%
-         set("branches_lwd", c(2,1,2)) %>%
-         set("branches_lty", c(1,2,1))
-
-plot(dend)
-
-#dend <- color_labels(dend, k = 3)
-# The same as:
-# labels_colors(dend)  <- get_leaves_branches_col(dend)
-#plot(dend)
-
-```
 
 # 7. Challenging the Solution.
-
 
 Given that I applied both Hierarchical and K-Means Clustering in my analysis I decided to challenge the solution by applying DBSCAn Clustering in order to see how my results would vary from those of the K_means.
 
@@ -852,4 +997,21 @@ hullplot(clust,db$cluster)
   
 ``` 
 
-Many of the points in the DBSCAN clustering were recorder as noise , therefore this may not be the best , clustering method to use while classifing this particular dataset
+Many of the points in the DBSCAN clustering were recorder as noise , therefore this may not be the best , clustering method to use while classifying this particular dataset.
+
+
+
+# 8. Conclusions and Recommendations
+
+The team should purpose to collect better and more data , as the dataset had a large number of outliers , was very skewed and leptokurtic. I believe that more data would have made the dataset better.
+
+From my analysis , I noted that the months that recorded the most activity were November, May , October and November. 
+Furthermore the ProductRelated pages had more traffic compared to the Informational and Administrative pages. 
+
+Therefore I would recommend that the company focus their attention to their customers more on the months of May , November ,October and December.
+They should also emphasize more on the Product related pages as these seem to have more traffic.
+
+The site also seems to make more revenue on days that are not closely related to Special Days .Users with lower bounce rates and exit rates seem to be the ones bringing in the revenue as these variables increase the revenue comes close to null. Thus the company should also take note of these factors.
+
+
+
